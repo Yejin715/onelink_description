@@ -11,10 +11,10 @@ import matplotlib.pyplot as plt
 # =================== 사용자 설정 ===================
 # 비교할 파일 경로들 (2~4개)
 file_paths = [
-    "/home/yejin/Desktop/limit_K1.csv",
-    "/home/yejin/Desktop/limit_K2.csv",
-    "/home/yejin/Desktop/limit_K3.csv",
-    "/home/yejin/Desktop/limit_K4.csv",
+    "/home/yejin/ros2_ws/src/onelink_description/onelink_description/result/limit_K1.csv",
+    "/home/yejin/ros2_ws/src/onelink_description/onelink_description/result/limit_K2.csv",
+    "/home/yejin/ros2_ws/src/onelink_description/onelink_description/result/limit_K3.csv",
+    "/home/yejin/ros2_ws/src/onelink_description/onelink_description/result/limit_K4.csv",
 ]
 
 sheet_name = None                 # 엑셀인 경우 시트명 (없으면 None)

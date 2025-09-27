@@ -6,10 +6,10 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 # =================== 사용자 설정 ===================
-# file1 = "/home/yejin/Desktop/force_velocity_accel0_3 vmax1_nodamping.csv"
-file1 = "/home/yejin/Desktop/force_velocity_accel0_3 vmax1.csv"
-# file1 = "/home/yejin/Desktop/force_velocity_accel0_05 vmax0_1_nodamping.csv"
-file2 = "/home/yejin/Desktop/force_velocity_accel0_05 vmax0_1.csv"
+# file1 = "/home/yejin/ros2_ws/src/onelink_description/onelink_description/result/force_velocity_accel0_3 vmax1_nodamping.csv"
+# file2 = "/home/yejin/ros2_ws/src/onelink_description/onelink_description/result/force_velocity_accel0_3 vmax1.csv"
+file1 = "/home/yejin/ros2_ws/src/onelink_description/onelink_description/result/force_velocity_accel0_05 vmax0_1_nodamping.csv"
+file2 = "/home/yejin/ros2_ws/src/onelink_description/onelink_description/result/force_velocity_accel0_05 vmax0_1.csv"
 
 sheet_name = None                 # 엑셀일 때만 의미 있음
 time_window = (0.0, 30.0)         # <== 더 이상 사용하지 않음 (무시됨)
