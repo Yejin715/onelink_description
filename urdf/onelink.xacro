@@ -1,0 +1,97 @@
+<?xml version="1.0" ?>
+<robot name="onelink" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:include filename="$(find onelink_description)/urdf/materials.xacro" />
+  <xacro:include filename="$(find onelink_description)/urdf/onelink.gazebo" />
+
+  <link name="world"/>
+
+  <joint name="base" type="fixed">
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+      <parent link="world"/>
+      <child link="base_link"/>
+      <axis xyz="0.0 0.0 0.0"/>
+      <limit lower="0.0" upper="0.0" effort="0.0" velocity="0.0"/>
+  </joint>
+  <link name="base_link">
+    <inertial>
+      <origin xyz="-3.3113691541883673e-16 -3.3113691541883673e-16 0.025" rpy="0 0 0"/>
+      <mass value="3532.4999999999995"/>
+      <inertia ixx="2650.110938" iyy="2650.110937" izz="5298.75" ixy="-0.0" iyz="-0.0" ixz="-0.0"/>
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="file://$(find onelink_description)/meshes/base_link.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+      <material name="silver"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="file://$(find onelink_description)/meshes/base_link.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <link name="slider_link">
+    <inertial>
+      <origin xyz="-2.842170943040401e-16 -2.842170943040401e-16 0.0" rpy="0 0 0"/>
+      <mass value="7.85"/>
+      <inertia ixx="0.013083" iyy="0.013083" izz="0.013083" ixy="0.0" iyz="0.0" ixz="0.0"/>
+    </inertial>
+    <visual>
+      <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="file://$(find onelink_description)/meshes/slider_link.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+      <material name="blue"/>
+    </visual>
+    <collision>
+      <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="file://$(find onelink_description)/meshes/slider_link.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="slider_joint" type="prismatic">
+    <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
+    <parent link="base_link"/>
+    <child link="slider_link"/>
+    <axis xyz="1 0 0"/>
+    <!-- ✅ 리미트: 단위는 m, m/s, N (또는 N·m) -->
+    <limit lower="-1.45" upper="1.45" effort="500.0" velocity="1.5"/>
+    <dynamics damping="20.0" friction="5.0"/>
+    <!-- 소프트 리밋(컨트롤 계층): 실험②에서 on/off 비교용 -->
+    <!-- <safety_controller k_position="50.0" k_velocity="10.0"
+                      soft_lower_limit="-1.45" soft_upper_limit="1.45"/> -->
+  </joint>
+
+  <ros2_control name="gazebo_system" type="system">
+    <hardware>
+      <plugin>gazebo_ros2_control/GazeboSystem</plugin>
+    </hardware>
+
+    <joint name="slider_joint">
+      <command_interface name="velocity"/>
+      <state_interface   name="position"/>
+      <state_interface   name="velocity"/>
+      <state_interface   name="effort"/>
+    </joint>
+  </ros2_control>
+
+  <!-- Gazebo Classic + ros2_control 플러그인 -->
+  <gazebo>
+    <plugin name="gazebo_ros2_control" filename="libgazebo_ros2_control.so">
+      <parameters>$(find onelink_description)/config/controller_manager.yaml</parameters>
+    </plugin>    
+    <plugin name="ft_pub" filename="libgazebo_ros_ft_sensor.so">
+      <!-- 출력 토픽 -->
+      <topic_name>/slider_joint/wrench</topic_name>
+      <!-- 힘을 표현할 좌표계(프리즘틱 축이 x이므로 slider_link 기준이 편함) -->
+      <frame_name>slider_link</frame_name>
+      <joint_name>slider_joint</joint_name>
+    </plugin>
+  </gazebo>
+</robot>

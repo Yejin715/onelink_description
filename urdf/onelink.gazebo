@@ -1,0 +1,44 @@
+<?xml version="1.0" ?>
+<robot name="onelink" xmlns:xacro="http://www.ros.org/wiki/xacro" >
+
+  <xacro:property name="color_red" value="Gazebo/Red" />
+  <xacro:property name="color_green" value="Gazebo/Green" />
+  <xacro:property name="color_blue" value="Gazebo/Blue" />
+  <xacro:property name="color_yellow" value="Gazebo/Yellow" />
+  <xacro:property name="color_purple" value="Gazebo/Purple" />
+  <xacro:property name="color_orange" value="Gazebo/Orange" />
+  <xacro:property name="color_silver" value="Gazebo/Silver" />
+
+  <gazebo reference="base_link">
+    <material>${color_silver}</material>
+    <mu1>0.2</mu1>
+    <mu2>0.2</mu2>
+    <self_collide>true</self_collide>
+    <gravity>true</gravity>
+  </gazebo>
+
+  <gazebo reference="slider_link">
+    <material>${color_blue}</material>
+    <mu1>0.2</mu1>
+    <mu2>0.2</mu2>
+    <self_collide>true</self_collide>
+  </gazebo>
+
+  <gazebo reference="slider_joint">
+    <provideFeedback>true</provideFeedback>
+    <implicitSpringDamper>true</implicitSpringDamper>
+    <limit>
+      <!-- 하드스톱 느낌: 낮게 / 소프트스톱 느낌: 높게 -->
+      <stiffness>5000.0</stiffness>
+      <dissipation>50.0</dissipation>
+      <erp>0.2</erp>
+      <cfm>0.0</cfm>
+    </limit>
+
+    <sensor name="ft_slider" type="force_torque">
+      <update_rate>250</update_rate>
+      <always_on>true</always_on>
+      <visualize>false</visualize>
+    </sensor>
+  </gazebo>
+</robot>

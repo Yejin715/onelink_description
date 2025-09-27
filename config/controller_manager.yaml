@@ -1,0 +1,20 @@
+controller_manager:
+  ros__parameters:
+    update_rate: 250
+
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+
+    prismatic_velocity_controller:
+      type: velocity_controllers/JointGroupVelocityController
+    prismatic_position_controller:
+      type: position_controllers/JointGroupPositionController
+
+# 각 컨트롤러별 파라미터
+prismatic_velocity_controller:
+  ros__parameters:
+    joints: [slider_joint]
+
+prismatic_position_controller:
+  ros__parameters:
+    joints: [slider_joint]
