@@ -6,10 +6,10 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 # =================== 사용자 설정 ===================
-# file1 = "/home/yejin/ros2_ws/src/onelink_description/onelink_description/result/force_velocity_accel0_3 vmax1_nodamping.csv"
-# file2 = "/home/yejin/ros2_ws/src/onelink_description/onelink_description/result/force_velocity_accel0_3 vmax1.csv"
-file1 = "/home/yejin/ros2_ws/src/onelink_description/onelink_description/result/force_velocity_accel0_05 vmax0_1_nodamping.csv"
-file2 = "/home/yejin/ros2_ws/src/onelink_description/onelink_description/result/force_velocity_accel0_05 vmax0_1.csv"
+file1 = "/home/yejin/ros2_ws/src/onelink_description/onelink_description/result/force_vel_K1.csv"
+file2 = "/home/yejin/ros2_ws/src/onelink_description/onelink_description/result/force_vel_K3.csv"
+# file1 = "/home/yejin/ros2_ws/src/onelink_description/onelink_description/result/force_vel_K2.csv"
+# file2 = "/home/yejin/ros2_ws/src/onelink_description/onelink_description/result/force_vel_K4.csv"
 
 sheet_name = None                 # 엑셀일 때만 의미 있음
 time_window = (0.0, 30.0)         # <== 더 이상 사용하지 않음 (무시됨)
@@ -18,6 +18,12 @@ plot_every_n = 1                  # 샘플링 간격(1=모든점)
 compute_velocity_from_position = False  # 속도 컬럼 없으면 True
 assumed_sampling_hz = None        # 위치→속도 미분 시 샘플링(예: 100.0)
 save_png = "force_velocity_compare.png"
+
+# === 이상치(Outlier) 필터 설정 ===
+# |force|가 이 값보다 크면 제거. 예: 750로 두면 +/-750 초과값 무시. 사용 안 하면 None
+force_abs_max = 700            # 예) 750
+# 분위수 범위로 남길 구간만 유지. 예: (0, 99.5)면 상위 0.5% 컷. 사용 안 하면 None
+force_percentile_keep = (0.0, 99.5)
 # ==================================================
 
 COL_ALIASES = {
@@ -126,6 +132,22 @@ def _clip_to_common_tmax(A: pd.DataFrame, B: pd.DataFrame):
     B2 = B[B["time_s"] <= tmax_common].copy()
     return A2.reset_index(drop=True), B2.reset_index(drop=True)
 
+def _filter_outliers(D: pd.DataFrame, name: str) -> pd.DataFrame:
+    """힘 컬럼 기준 이상치 제거(절댓값 임계 + 분위수 범위)."""
+    before = len(D)
+    if force_abs_max is not None:
+        D = D[D["force"].abs() <= float(force_abs_max)]
+    if force_percentile_keep is not None and len(D) > 0:
+        lo, hi = force_percentile_keep
+        lo = max(0.0, float(lo)); hi = min(100.0, float(hi))
+        if hi > lo:
+            qlo, qhi = D["force"].quantile([lo/100.0, hi/100.0])
+            D = D[(D["force"] >= qlo) & (D["force"] <= qhi)]
+    removed = before - len(D)
+    if removed > 0:
+        print(f"[FILTER] {name}: removed {removed} outliers (kept {len(D)})")
+    return D
+
 def compare_force_velocity(path_a, path_b, sheet=None, time_window=None, rolling_window=5,
                            plot_every_n=3, compute_velocity_from_position=False,
                            assumed_sampling_hz=None, save_png="force_velocity_compare.png"):
@@ -135,6 +157,10 @@ def compare_force_velocity(path_a, path_b, sheet=None, time_window=None, rolling
 
     # === 공통 최대 시간까지만 사용 ===
     A, B = _clip_to_common_tmax(A, B)
+
+    # === 이상치 제거 ===
+    A = _filter_outliers(A, os.path.basename(path_a))
+    B = _filter_outliers(B, os.path.basename(path_b))
 
     Ap = A.iloc[::max(1, plot_every_n)]
     Bp = B.iloc[::max(1, plot_every_n)]
