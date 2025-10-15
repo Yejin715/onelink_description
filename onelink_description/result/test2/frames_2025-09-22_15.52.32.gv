@@ -1,0 +1,20 @@
+digraph G {
+"laser_tracker/Link_1" -> "laser_tracker/Link_2"[label=" Broadcaster: default_authority\nAverage rate: 62.766\nBuffer length: 0.94\nMost recent transform: 51.383\nOldest transform: 50.443\n"];
+"laser_tracker/base_link" -> "laser_tracker/Link_1"[label=" Broadcaster: default_authority\nAverage rate: 62.766\nBuffer length: 0.94\nMost recent transform: 51.383\nOldest transform: 50.443\n"];
+"laser_tracker/world" -> "laser_tracker/base_link"[label=" Broadcaster: default_authority\nAverage rate: 10000.0\nBuffer length: 0.0\nMost recent transform: 0.0\nOldest transform: 0.0\n"];
+"yuilrobotics/world" -> "yuilrobotics/base_link"[label=" Broadcaster: default_authority\nAverage rate: 10000.0\nBuffer length: 0.0\nMost recent transform: 0.0\nOldest transform: 0.0\n"];
+"world" -> "yuilrobotics/world"[label=" Broadcaster: default_authority\nAverage rate: 10000.0\nBuffer length: 0.0\nMost recent transform: 0.0\nOldest transform: 0.0\n"];
+"yuilrobotics/Link_6" -> "yuilrobotics/ee_smr"[label=" Broadcaster: default_authority\nAverage rate: 10000.0\nBuffer length: 0.0\nMost recent transform: 0.0\nOldest transform: 0.0\n"];
+"yuilrobotics/Link_5" -> "yuilrobotics/Link_6"[label=" Broadcaster: default_authority\nAverage rate: 62.766\nBuffer length: 0.94\nMost recent transform: 51.384\nOldest transform: 50.444\n"];
+"yuilrobotics/base_link" -> "yuilrobotics/Link_1"[label=" Broadcaster: default_authority\nAverage rate: 62.766\nBuffer length: 0.94\nMost recent transform: 51.384\nOldest transform: 50.444\n"];
+"yuilrobotics/Link_1" -> "yuilrobotics/Link_2"[label=" Broadcaster: default_authority\nAverage rate: 62.766\nBuffer length: 0.94\nMost recent transform: 51.384\nOldest transform: 50.444\n"];
+"yuilrobotics/Link_2" -> "yuilrobotics/Link_3"[label=" Broadcaster: default_authority\nAverage rate: 62.766\nBuffer length: 0.94\nMost recent transform: 51.384\nOldest transform: 50.444\n"];
+"yuilrobotics/Link_3" -> "yuilrobotics/Link_4"[label=" Broadcaster: default_authority\nAverage rate: 62.766\nBuffer length: 0.94\nMost recent transform: 51.384\nOldest transform: 50.444\n"];
+"yuilrobotics/Link_4" -> "yuilrobotics/Link_5"[label=" Broadcaster: default_authority\nAverage rate: 62.766\nBuffer length: 0.94\nMost recent transform: 51.384\nOldest transform: 50.444\n"];
+"world" -> "laser_tracker/world"[label=" Broadcaster: default_authority\nAverage rate: 10000.0\nBuffer length: 0.0\nMost recent transform: 0.0\nOldest transform: 0.0\n"];
+"laser_tracker/Link_2" -> "laser_tracker/optic_frame"[label=" Broadcaster: default_authority\nAverage rate: 10000.0\nBuffer length: 0.0\nMost recent transform: 0.0\nOldest transform: 0.0\n"];
+edge [style=invis];
+ subgraph cluster_legend { style=bold; color=black; label ="view_frames Result";
+"Recorded at time: 1758523952.855043"[ shape=plaintext ] ;
+}->"world";
+}

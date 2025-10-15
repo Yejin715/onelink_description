@@ -77,24 +77,32 @@ def generate_launch_description():
                 'joint_state_broadcaster', '--controller-manager', '/controller_manager'],
             output='screen'
         )
+        
+        sp_eff = ExecuteProcess(
+            cmd=['ros2', 'run', 'controller_manager', 'spawner',
+                'prismatic_effort_controller', '--controller-manager', '/controller_manager'],
+            output='screen'
+        )
+
         sp_vel = ExecuteProcess(
             cmd=['ros2', 'run', 'controller_manager', 'spawner',
-                'prismatic_velocity_controller', '--controller-manager', '/controller_manager'],
+                'prismatic_velocity_controller', '--inactive', '--controller-manager', '/controller_manager'],
             output='screen'
         )
 
         # (추가) position 컨트롤러는 '비활성'으로 로드만
         sp_pos = ExecuteProcess(
             cmd=['ros2','run','controller_manager','spawner',
-                'prismatic_position_controller','--inactive', '--controller-manager','/controller_manager'],
+                'prismatic_position_controller', '--inactive', '--controller-manager','/controller_manager'],
             output='screen'
         )
 
         # 9) 이벤트 체인: Gazebo → (spawn 서비스 ready) → Spawn → (CM ready) → JSB → Velocity
         ev_after_spawn  = RegisterEventHandler(OnProcessExit(target_action=spawn, on_exit=[wait_cm]))
         ev_after_cm     = RegisterEventHandler(OnProcessExit(target_action=wait_cm, on_exit=[sp_jsb]))
-        ev_after_jsb    = RegisterEventHandler(OnProcessExit(target_action=sp_jsb, on_exit=[sp_vel]))
-        ev_after_vel    = RegisterEventHandler(OnProcessExit(target_action=sp_vel, on_exit=[sp_pos]))
+        ev_after_jsb    = RegisterEventHandler(OnProcessExit(target_action=sp_jsb, on_exit=[sp_eff]))
+        # ev_after_eff    = RegisterEventHandler(OnProcessExit(target_action=sp_eff, on_exit=[sp_vel]))
+        # ev_after_vel    = RegisterEventHandler(OnProcessExit(target_action=sp_vel, on_exit=[sp_pos]))
 
         return [
             gazebo,
@@ -103,11 +111,12 @@ def generate_launch_description():
             ev_after_spawn,
             ev_after_cm,
             ev_after_jsb,
-            ev_after_vel,
+            # ev_after_eff,
+            # ev_after_vel,
         ]
 
     return LaunchDescription([
-        DeclareLaunchArgument('entity', default_value='yuilrobotics'),
+        DeclareLaunchArgument('entity', default_value='onelink'),
         OpaqueFunction(function=lambda ctx:
             _start_flow(ctx)
         ),

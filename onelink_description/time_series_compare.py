@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# time_series_compare_4.py — v(t), a(t), Fx(t) 3-서브플롯 비교 (최대 4개 파일)
+# time_series_compare_4.py — pos(t), v(t), a(t), Fx(t) 4-서브플롯 비교 (최대 4개 파일)
 import os, math
 import numpy as np
 import pandas as pd
@@ -11,10 +11,10 @@ import matplotlib.pyplot as plt
 # =================== 사용자 설정 ===================
 # 비교할 파일 경로들 (2~4개)
 file_paths = [
-    "/home/yejin/ros2_ws/src/onelink_description/onelink_description/result/limit_K1.csv",
-    "/home/yejin/ros2_ws/src/onelink_description/onelink_description/result/limit_K2.csv",
-    "/home/yejin/ros2_ws/src/onelink_description/onelink_description/result/limit_K3.csv",
-    "/home/yejin/ros2_ws/src/onelink_description/onelink_description/result/limit_K4.csv",
+    "/home/yejin/ros2_ws/limit_K_8.csv",
+    "/home/yejin/ros2_ws/limit_K_9.csv",
+    # "/home/yejin/ros2_ws/limit_K_3.csv",
+    # "/home/yejin/ros2_ws/src/onelink_description/onelink_description/result/limit_K4.csv",
 ]
 
 sheet_name = None                 # 엑셀인 경우 시트명 (없으면 None)
@@ -22,7 +22,7 @@ rolling_window = 0                # 스무딩 윈도우(0/1=끄기, 5~15 추천)
 plot_every_n = 1                  # 다운샘플링 간격(1=모든점)
 compute_velocity_from_position = False  # 속도 컬럼 없으면 True
 assumed_sampling_hz = None        # 시간 컬럼 없을 때 미분용 샘플링 Hz (필요시 지정)
-out_png = "time_series_compare_4.png"   # 저장 파일명
+out_png = "time_series_compare_pos_4.png"   # 저장 파일명
 # ===================================================
 
 COL_ALIASES = {
@@ -85,9 +85,13 @@ def _prep_one(path, sheet=None, rolling_window=5,
     df = _load_table(path, sheet=sheet).dropna(axis=1, how="all")
 
     c_time = _find_col(df, "time")
-    c_pos  = _find_col(df, "position")
+    c_pos  = _find_col(df, "position") # 위치 컬럼 찾기
     c_vel  = _find_col(df, "velocity")
     c_for  = _find_col(df, "force")
+    
+    # 위치/힘 컬럼 확인 (위치도 필수!)
+    if c_pos is None:
+        raise ValueError(f"[{os.path.basename(path)}] Missing 'position/위치' column. Columns: {list(df.columns)}")
     if c_for is None:
         raise ValueError(f"[{os.path.basename(path)}] Missing 'force/힘' column. Columns: {list(df.columns)}")
 
@@ -106,12 +110,13 @@ def _prep_one(path, sheet=None, rolling_window=5,
     else:
         out["time_s"] = np.nan  # 시간축이 없으면 인덱스로 표시
 
+    # position
+    out["pos"] = _ensure_numeric(df[c_pos]) # 위치 데이터 추가
+
     # velocity
     if c_vel is not None:
         out["vel"] = _ensure_numeric(df[c_vel])
     elif compute_velocity_from_position:
-        if c_pos is None:
-            raise ValueError(f"[{os.path.basename(path)}] Need a position column to compute velocity.")
         out["vel"] = _compute_velocity_from_position(
             df[c_pos],
             out["time_s"] if np.isfinite(out["time_s"]).any() else None,
@@ -131,10 +136,11 @@ def _prep_one(path, sheet=None, rolling_window=5,
     out["force"] = _ensure_numeric(df[c_for])
 
     # drop NaNs
-    out = out.dropna(subset=["vel","acc","force"])
+    out = out.dropna(subset=["pos","vel","acc","force"]) # 'pos' 추가
 
     # smoothing
     if rolling_window and rolling_window > 1:
+        out["pos"]   = out["pos"].rolling(rolling_window, min_periods=1, center=True).mean() # 'pos' 스무딩 추가
         out["vel"]   = out["vel"].rolling(rolling_window, min_periods=1, center=True).mean()
         out["acc"]   = out["acc"].rolling(rolling_window, min_periods=1, center=True).mean()
         out["force"] = out["force"].rolling(rolling_window, min_periods=1, center=True).mean()
@@ -175,9 +181,9 @@ def compare_time_series_multi(paths, sheet=None, rolling_window=5,
     # 다운샘플링
     dfs = [ D.iloc[::max(1, plot_every_n)].copy() for D in dfs ]
 
-    # ==== 서브플롯 ====
-    fig, axes = plt.subplots(nrows=3, ncols=1, figsize=(11, 9), sharex=True)
-    ax_v, ax_a, ax_f = axes
+    # ==== 서브플롯: 4개로 변경! ====
+    fig, axes = plt.subplots(nrows=4, ncols=1, figsize=(11, 12), sharex=True) # nrows=4
+    ax_p, ax_v, ax_a, ax_f = axes # 새로운 서브플롯 할당
 
     # x축: time_s가 있으면 시간, 아니면 인덱스
     has_time = all(("time_s" in D.columns) for D in dfs)
@@ -186,19 +192,21 @@ def compare_time_series_multi(paths, sheet=None, rolling_window=5,
     # 각 서브플롯에 모든 파일을 그리기
     for D, lbl in zip(dfs, labels):
         x = D["time_s"] if has_time else D.index
+        ax_p.plot(x, D["pos"],   label=lbl) # 위치 플롯 추가
         ax_v.plot(x, D["vel"],   label=lbl)
         ax_a.plot(x, D["acc"],   label=lbl)
         ax_f.plot(x, D["force"], label=lbl)
 
-    ax_v.set_ylabel("Velocity");     ax_v.grid(True)
-    ax_a.set_ylabel("Acceleration"); ax_a.grid(True)
-    ax_f.set_ylabel("Force (Fx)");   ax_f.set_xlabel(x_label); ax_f.grid(True)
+    ax_p.set_ylabel("Position [m]");     ax_p.grid(True) # 위치 축 레이블
+    ax_v.set_ylabel("Velocity [m/s]");     ax_v.grid(True)
+    ax_a.set_ylabel("Acceleration [m/s²]"); ax_a.grid(True)
+    ax_f.set_ylabel("Force(Fx) [N]");   ax_f.set_xlabel(x_label); ax_f.grid(True)
 
     # 범례는 위쪽 하나로 통합
     handles, leg_labels = ax_v.get_legend_handles_labels()
     fig.legend(handles, leg_labels, loc="upper center", ncol=min(len(paths), 4), frameon=True, bbox_to_anchor=(0.5, 1.02))
 
-    fig.suptitle("Time-Series Comparison (up to 4 files): v(t), a(t), Fx(t)", y=1.06)
+    fig.suptitle("Time-Series Comparison: Pos(t), v(t), a(t), Fx(t)", y=1.04) # 제목 변경
     fig.tight_layout()
     fig.savefig(save_png, dpi=150, bbox_inches="tight")
     plt.show()

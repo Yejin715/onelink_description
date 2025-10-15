@@ -11,16 +11,16 @@ class VelRampLogger(Node):
 
         # === 파라미터 ===
         self.jname       = self.declare_parameter('joint', 'slider_joint').value
-        self.lower       = float(self.declare_parameter('lower_limit', -1.0).value)
-        self.upper       = float(self.declare_parameter('upper_limit',  5.0).value)
+        self.lower       = float(self.declare_parameter('lower_limit', -10.0).value)
+        self.upper       = float(self.declare_parameter('upper_limit',  10.0).value)
         self.margin      = float(self.declare_parameter('stop_margin',   0.0).value)
 
-        self.a           = float(self.declare_parameter('accel', 0.50).value)   # m/s^2
-        self.v_max       = float(self.declare_parameter('v_max', 1.50).value)   # m/s
+        self.a           = float(self.declare_parameter('accel', 0.20).value)   # m/s^2
+        self.v_max       = float(self.declare_parameter('v_max', 0.70).value)   # m/s
         self.dt          = 0.001
 
         # ✅ 리밋 도달 후 추가 기록 시간(초)
-        self.after_limit_hold = float(self.declare_parameter('after_limit_hold', 2.0).value)
+        self.after_limit_hold = float(self.declare_parameter('after_limit_hold', 0.0).value)
 
         # 퍼블리셔/서브스크라이버
         self.pub    = self.create_publisher(Float64MultiArray, '/prismatic_velocity_controller/commands', 1)
@@ -82,7 +82,7 @@ class VelRampLogger(Node):
         if self.phase == 'exp':
             t = self.elapsed(self.exp_start) if self.exp_start else 0.0
             v_cmd = self.sign * min(self.a * t, self.v_max)
-            self.publish_vel(v_cmd)
+            # self.publish_vel(v_cmd)
 
             if self.last_js:
                 p,v,e = self.last_js

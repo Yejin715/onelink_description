@@ -10,18 +10,9 @@
   <xacro:property name="color_silver" value="Gazebo/Silver" />
 
   <gazebo reference="base_link">
-    <material>${color_silver}</material>
-    <mu1>0.2</mu1>
-    <mu2>0.2</mu2>
-    <self_collide>true</self_collide>
-    <gravity>true</gravity>
-  </gazebo>
-
-  <gazebo reference="slider_link">
     <material>${color_blue}</material>
-    <mu1>0.2</mu1>
-    <mu2>0.2</mu2>
-    <self_collide>true</self_collide>
+    <mu1>0.0</mu1>
+    <mu2>0.0</mu2>
   </gazebo>
 
   <gazebo reference="slider_joint">
@@ -29,16 +20,21 @@
     <implicitSpringDamper>true</implicitSpringDamper>
     <limit>
       <!-- 하드스톱 느낌: 낮게 / 소프트스톱 느낌: 높게 -->
-      <stiffness>5000.0</stiffness>
-      <dissipation>50.0</dissipation>
-      <erp>0.2</erp>
+      <stiffness>0.0</stiffness>
+      <dissipation>0.0</dissipation>
+      <erp>0.0</erp>
       <cfm>0.0</cfm>
     </limit>
 
     <sensor name="ft_slider" type="force_torque">
-      <update_rate>250</update_rate>
+      <update_rate>1000</update_rate>
       <always_on>true</always_on>
-      <visualize>false</visualize>
+      <visualize>true</visualize>
+      <!-- measurement_frame: 조인트 프레임(축 정렬) 기준으로 힘/토크가 나옴 -->
+      <force_torque>
+        <frame>child</frame> <!-- child|parent|sensor -->
+        <measure_direction>child_to_parent</measure_direction>
+      </force_torque>
     </sensor>
   </gazebo>
 </robot>

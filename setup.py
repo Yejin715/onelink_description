@@ -27,6 +27,10 @@ setup(
     entry_points={
         'console_scripts': [
             'vel_ramp_and_log = onelink_description.vel_ramp_and_log:main',
+            'ramp_effort_node = onelink_description.ramp_effort_node:main',
+            'effort_ramp_logger = onelink_description.effort_ramp_logger:main',
+            'force_ramp_friction = onelink_description.force_ramp_friction:main',
+            'safety_k_gain_tester = onelink_description.safety_k_gain_tester:main',
         ],
     },
 )
